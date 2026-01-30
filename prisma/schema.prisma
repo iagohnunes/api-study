@@ -9,7 +9,7 @@ datasource db {
 model Teste {
   id         BigInt   @id @default(autoincrement())
   descricao  String?  @default("") @db.VarChar
-  created_at DateTime @default(now()) @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -22,8 +22,8 @@ model auth_identitie {
   email                     String?
   email_verified_at         DateTime?                   @db.Timestamptz(6)
   password_hash             String?
-  created_at                DateTime                    @default(now()) @db.Timestamptz(6)
-  updated_at                DateTime                    @default(now()) @db.Timestamptz(6)
+  createdAt                DateTime                    @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt                DateTime                    @default(now()) @db.Timestamptz(6)@map("updated_at")
   users                     user                       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   email_verification_tokens email_verification_token[]
 
@@ -42,7 +42,7 @@ model email_verification_token {
   token_hash      String          @unique
   expires_at      DateTime        @db.Timestamptz(6)
   used_at         DateTime?       @db.Timestamptz(6)
-  created_at      DateTime        @default(now()) @db.Timestamptz(6)
+  createdAt      DateTime        @default(now()) @db.Timestamptz(6) @map("created_at")
   auth_identities auth_identitie @relation(fields: [identity_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([expires_at], map: "ix_email_verif_expires")
@@ -61,7 +61,7 @@ model refresh_token {
   revoked_at DateTime? @db.Timestamptz(6)
   ip         String?
   user_agent String?
-  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)  @map("created_at")
   users      user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([expires_at], map: "ix_refresh_expires")
@@ -76,8 +76,8 @@ model user {
   name            String?
   status          user_status       @default(PENDING)
 
-  created_at      DateTime          @default(now()) @db.Timestamptz(6)
-  updated_at      DateTime          @default(now()) @db.Timestamptz(6)
+  createdAt      DateTime          @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt      DateTime          @default(now()) @db.Timestamptz(6) @map("updated_at")
 
   auth_identities auth_identitie[]
   refresh_tokens  refresh_token[]
