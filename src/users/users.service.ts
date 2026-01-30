@@ -12,7 +12,7 @@ export class UsersService {
   }
 
   findAll() {
-    return this.prisma.users.findMany({
+    return this.prisma.user.findMany({
       select: {
         id: true,
         name: true,
