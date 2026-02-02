@@ -81,8 +81,4 @@ export class UsersService {
       throw error;
     }
   }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
 }
