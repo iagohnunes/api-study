@@ -9,7 +9,8 @@ primary_region = 'iad'
 [build]
 
 [deploy]
-  release_command = "npx prisma migrate deploy"
+  # Apply migrations; if database is already populated, baseline once then retry
+  release_command = "sh -c \"npx prisma migrate deploy || (npx prisma migrate resolve --applied 0001_init && npx prisma migrate deploy)\""
 
 [http_service]
   internal_port = 3000
