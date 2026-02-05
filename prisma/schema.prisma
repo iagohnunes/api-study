@@ -6,48 +6,40 @@ datasource db {
   provider = "postgresql"
 }
 
-model Teste {
-  id         BigInt   @id @default(autoincrement())
-  descricao  String?  @default("") @db.VarChar
-  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
-}
-
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model auth_identitie {
-  id                        String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id                   String                      @db.Uuid
+  id                        String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                   String                     @db.Uuid
   provider                  auth_provider
   provider_user_id          String?
   email                     String?
-  email_verified_at         DateTime?                   @db.Timestamptz(6)
+  email_verified_at         DateTime?                  @db.Timestamptz(6)
   password_hash             String?
-  createdAt                DateTime                    @default(now()) @db.Timestamptz(6) @map("created_at")
-  updatedAt                DateTime                    @default(now()) @db.Timestamptz(6)@map("updated_at")
+  createdAt                 DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                 DateTime                   @default(now()) @map("updated_at") @db.Timestamptz(6)
   users                     user                       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   email_verification_tokens email_verification_token[]
 
   @@unique([provider, provider_user_id], map: "ux_auth_identities_provider_user")
   @@index([email], map: "ix_auth_identities_email")
   @@index([user_id], map: "ix_auth_identities_user_id")
-
   @@map("auth_identities")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model email_verification_token {
-  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  identity_id     String          @db.Uuid
-  token_hash      String          @unique
-  expires_at      DateTime        @db.Timestamptz(6)
-  used_at         DateTime?       @db.Timestamptz(6)
-  createdAt      DateTime        @default(now()) @db.Timestamptz(6) @map("created_at")
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  identity_id     String         @db.Uuid
+  token_hash      String         @unique
+  expires_at      DateTime       @db.Timestamptz(6)
+  used_at         DateTime?      @db.Timestamptz(6)
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   auth_identities auth_identitie @relation(fields: [identity_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([expires_at], map: "ix_email_verif_expires")
   @@index([identity_id], map: "ix_email_verif_identity")
-
   @@map("email_verification_tokens")
 }
 
@@ -61,28 +53,33 @@ model refresh_token {
   revoked_at DateTime? @db.Timestamptz(6)
   ip         String?
   user_agent String?
-  createdAt DateTime  @default(now()) @db.Timestamptz(6)  @map("created_at")
-  users      user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  users      user      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([expires_at], map: "ix_refresh_expires")
   @@index([user_id], map: "ix_refresh_user_id")
-
   @@map("refresh_tokens")
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model user {
-  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name            String?
-  status          user_status       @default(PENDING)
-
-  createdAt      DateTime          @default(now()) @db.Timestamptz(6) @map("created_at")
-  updatedAt      DateTime          @default(now()) @db.Timestamptz(6) @map("updated_at")
-
+  status          user_status      @default(PENDING)
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime         @default(now()) @map("updated_at") @db.Timestamptz(6)
   auth_identities auth_identitie[]
   refresh_tokens  refresh_token[]
 
   @@map("users")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model teste {
+  id         BigInt   @id(map: "Teste_pkey") @default(autoincrement())
+  descricao  String?  @default("") @db.VarChar
+  created_at DateTime @default(now()) @db.Timestamptz(6)
 }
 
 enum auth_provider {
