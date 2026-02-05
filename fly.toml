@@ -9,8 +9,8 @@ primary_region = 'iad'
 [build]
 
 [deploy]
-  # Create/align schema even if DB has existing tables, then mark baseline and run pending migrations
-  release_command = "sh -c \"npx prisma db push --skip-generate && (npx prisma migrate resolve --applied 0001_init || true) && npx prisma migrate deploy\""
+  # Create/align schema, mark baseline if needed, then run pending migrations
+  release_command = "sh -c \"npx prisma db push && (npx prisma migrate resolve --applied 0001_init || true) && npx prisma migrate deploy\""
 
 [http_service]
   internal_port = 3000
