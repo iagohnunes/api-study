@@ -14,10 +14,10 @@ export class UsersService {
         id: true,
         name: true,
         status: true,
-        createdAt: true,
-        updatedAt: true,
+        created_at: true,
+        updated_at: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { created_at: 'desc' },
     });
   }
 
@@ -28,8 +28,8 @@ export class UsersService {
         id: true,
         name: true,
         status: true,
-        createdAt: true,
-        updatedAt: true,
+        created_at: true,
+        updated_at: true,
       },
       where: {
         id,
@@ -56,7 +56,7 @@ export class UsersService {
           id: true,
           name: true,
           status: true,
-          createdAt: true,
+          created_at: true,
         },
       });
 
@@ -71,7 +71,7 @@ export class UsersService {
           id: true,
           name: true,
           status: true,
-          updatedAt: true,
+          updated_at: true,
         },
       })
     } catch (error) {
