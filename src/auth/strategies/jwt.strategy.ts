@@ -36,6 +36,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           select: {
             email: true
           }
+        },
+        user_roles: {
+          select: {
+            role: {
+              include: {
+                role_permissions: {
+                  include: {
+                    permission: true
+                  }
+                }
+              }
+            }
+          }
         }
       }
     });
@@ -50,12 +63,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Usuário bloqueado');
     }
 
+    // Extrair nomes das roles
+    const roles = user.user_roles.map(ur => ur.role.name);
+
+    // Extrair permissions (de todas as roles do usuário)
+    const permissions = user.user_roles
+      .flatMap(ur => ur.role.role_permissions)  // Pega todas as role_permissions
+      .map(rp => rp.permission.name)  // Extrai o nome da permission
+      .filter((value, index, self) => self.indexOf(value) === index);  // Remove duplicadas
+
     // Retorna dados do usuário (vai ficar disponível nas rotas)
     return {
       id: user.id,
       email: payload.email,
       name: user.name,
       status: user.status,
+      roles,
+      permissions,
     };
   }
 }

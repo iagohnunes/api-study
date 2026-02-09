@@ -2,6 +2,8 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { AuditInterceptor } from './auth/interceptors/audit.interceptor';
+import { PrismaService } from './prisma/prisma.service';
 
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
