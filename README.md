@@ -1,98 +1,254 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🔐 Sistema de Autenticação JWT - NestJS
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Sistema completo de autenticação e autorização com JWT, controle de acesso baseado em roles e permissions, e auditoria automática.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 📋 Índice
 
-## Description
+- [Características](#-características)
+- [Tecnologias](#-tecnologias)
+- [Pré-requisitos](#-pré-requisitos)
+- [Instalação](#-instalação)
+- [Configuração](#-configuração)
+- [Executando o Projeto](#-executando-o-projeto)
+- [Estrutura do Projeto](#-estrutura-do-projeto)
+- [Documentação da API](#-documentação-da-api)
+- [Segurança](#-segurança)
+- [Licença](#-licença)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## ✨ Características
 
+### Autenticação
+- ✅ Registro de usuários com validação
+- ✅ Login com email e senha
+- ✅ Access Token (JWT) com expiração curta (15 minutos)
+- ✅ Refresh Token com expiração longa (7 dias)
+- ✅ Logout com revogação de refresh token
+- ✅ Proteção automática de rotas (Guard Global)
+
+### Controle de Acesso
+- ✅ Sistema de **Roles** (Papéis): ADMIN, USER, MODERATOR
+- ✅ Sistema de **Permissions** (Permissões granulares)
+- ✅ Guards customizados (@Roles, @Permissions)
+- ✅ Combinação de roles e permissions na mesma rota
+
+### Segurança
+- ✅ Senhas hasheadas com **bcrypt** (salt rounds: 10)
+- ✅ Refresh tokens com **hash SHA256** no banco
+- ✅ Validação de usuários bloqueados/deletados
+- ✅ Tokens JWT assinados com secret
+- ✅ Revogação de tokens no banco
+
+### Auditoria
+- ✅ Log automático de todas as ações críticas
+- ✅ Registro de: user_id, action, IP, user_agent, timestamp
+- ✅ Metadados em JSON (status HTTP, método, erros)
+- ✅ Histórico completo rastreável
+
+---
+
+## 🛠️ Tecnologias
+
+- **[NestJS](https://nestjs.com/)** - Framework Node.js progressivo
+- **[Prisma](https://www.prisma.io/)** - ORM moderno para TypeScript
+- **[PostgreSQL](https://www.postgresql.org/)** - Banco de dados relacional
+- **[Supabase](https://supabase.com/)** - Backend as a Service
+- **[JWT](https://jwt.io/)** - JSON Web Tokens para autenticação
+- **[Passport](http://www.passportjs.org/)** - Middleware de autenticação
+- **[Bcrypt](https://www.npmjs.com/package/bcrypt)** - Hash de senhas
+
+---
+
+## 📦 Pré-requisitos
+
+- **Node.js** 18+ ([Download](https://nodejs.org/))
+- **npm** ou **yarn**
+- **PostgreSQL** 14+ (ou conta no [Supabase](https://supabase.com/))
+
+---
+
+## 🚀 Instalação
+
+1. **Clone o repositório:**
 ```bash
-$ npm install
+git clone <url-do-repositorio>
+cd <nome-do-projeto>
 ```
 
-## Compile and run the project
-
+2. **Instale as dependências:**
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
-
+3. **Configure as variáveis de ambiente:**
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+cp .env.example .env
 ```
 
-## Deployment
+Edite o arquivo `.env` com suas credenciais (veja seção [Configuração](#-configuração))
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+4. **Execute as migrations do Prisma:**
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npx prisma migrate dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+5. **Execute os seeds (dados iniciais):**
+```bash
+npx prisma db seed
+```
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## ⚙️ Configuração
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Variáveis de Ambiente (.env)
 
-## Support
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```env
+# Database (Supabase ou PostgreSQL local)
+DATABASE_URL="postgresql://user:password@host:5432/database?schema=public"
 
-## Stay in touch
+# JWT Secrets (gere com: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))")
+JWT_SECRET=seu_secret_aqui_64_caracteres_aleatorios
+JWT_EXPIRES_IN=15m
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+JWT_REFRESH_SECRET=outro_secret_diferente_64_caracteres
+JWT_REFRESH_EXPIRES_IN=7d
 
-## License
+# Application
+PORT=3000
+NODE_ENV=development
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Gerando JWT Secrets
+
+Execute no terminal:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+Copie o resultado e cole em `JWT_SECRET` e `JWT_REFRESH_SECRET` (gere dois diferentes).
+
+### Seeds (Dados Iniciais)
+
+O comando `npx prisma db seed` criará:
+
+- **3 Roles:** ADMIN, USER, MODERATOR
+- **15 Permissions:** users:read, users:write, users:delete, posts:read, posts:write, posts:delete, comments:read, comments:write, comments:delete, roles:read, roles:write, permissions:read, permissions:write, reports:view, moderation:access
+
+**Relacionamentos:**
+- **ADMIN:** Todas as 15 permissions
+- **MODERATOR:** 9 permissions (users, posts, comments - read/write/delete)
+- **USER:** 6 permissions (posts e comments - read/write/delete)
+
+---
+
+## 🏃 Executando o Projeto
+
+### Desenvolvimento
+```bash
+npm run start:dev
+```
+
+Servidor rodando em: `http://localhost:3000`
+
+### Produção
+```bash
+npm run build
+npm run start:prod
+```
+
+### Testes
+```bash
+npm run test
+```
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+src/
+├── auth/                        # Módulo de autenticação
+│   ├── decorators/              # Decorators customizados
+│   │   ├── current-user.decorator.ts    # @CurrentUser()
+│   │   ├── public.decorator.ts          # @Public()
+│   │   ├── roles.decorator.ts           # @Roles('ADMIN')
+│   │   └── permissions.decorator.ts     # @Permissions('users:write')
+│   ├── dto/                     # Data Transfer Objects
+│   │   ├── register.dto.ts
+│   │   ├── login.dto.ts
+│   │   ├── refresh-token.dto.ts
+│   │   └── logout.dto.ts
+│   ├── guards/                  # Guards de proteção
+│   │   ├── jwt-auth.guard.ts            # Valida JWT
+│   │   ├── roles.guard.ts               # Valida roles
+│   │   └── permissions.guard.ts         # Valida permissions
+│   ├── interceptors/            # Interceptors
+│   │   └── audit.interceptor.ts         # Log automático
+│   ├── strategies/              # Passport strategies
+│   │   └── jwt.strategy.ts              # Strategy JWT
+│   ├── auth.controller.ts       # Endpoints da API
+│   ├── auth.service.ts          # Lógica de negócio
+│   └── auth.module.ts           # Configuração do módulo
+├── prisma/                      # Prisma ORM
+│   ├── schema.prisma            # Schema do banco
+│   ├── migrations/              # Migrations
+│   └── seed.ts                  # Seeds (dados iniciais)
+├── users/                       # Módulo de usuários
+└── main.ts                      # Entrada da aplicação
+```
+
+---
+
+## 📖 Documentação da API
+
+Veja a **[documentação completa da API](./API.md)** com todos os endpoints, exemplos de requisição e resposta.
+
+**Endpoints principais:**
+
+- `POST /auth/register` - Criar conta
+- `POST /auth/login` - Fazer login
+- `POST /auth/refresh` - Renovar access token
+- `GET /auth/profile` - Ver perfil (protegido)
+- `POST /auth/logout` - Sair
+
+---
+
+## 🔒 Segurança
+
+Veja o **[guia completo de segurança](./SECURITY.md)** com boas práticas e recomendações.
+
+**Principais medidas de segurança:**
+
+- ✅ Senhas NUNCA são salvas em texto puro (bcrypt)
+- ✅ Access tokens de curta duração (15 minutos)
+- ✅ Refresh tokens revogáveis no banco
+- ✅ Validação de usuários bloqueados/deletados
+- ✅ Guard Global (todas as rotas protegidas por padrão)
+- ✅ Auditoria completa de ações
+
+---
+
+## 📄 Licença
+
+Este projeto está sob a licença [MIT](LICENSE).
+
+---
+
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas! Sinta-se livre para abrir issues e pull requests.
+
+---
+
+## 📧 Contato
+
+Para dúvidas ou sugestões, entre em contato através de [seu-email@exemplo.com](mailto:seu-email@exemplo.com)
+
+---
+
+**Desenvolvido com ❤️ usando NestJS**
