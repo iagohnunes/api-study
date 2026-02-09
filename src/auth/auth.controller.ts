@@ -6,23 +6,24 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LogoutDto } from './dto/logout.dto';
+import { Public } from './decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Public()
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
 
+  @Public()
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
 
-    // Rota protegida - só funciona com token válido
-  @UseGuards(JwtAuthGuard)  // ← Guard protege a rota
   @Get('profile')
   getProfile(@CurrentUser() user) {  // ← Decorator pega o usuário
     // user = dados retornados pela JwtStrategy
@@ -33,13 +34,13 @@ export class AuthController {
   }
 
   // Rota para renovar o access token
+  @Public()
   @Post('refresh')
   refresh(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshToken(refreshTokenDto.refresh_token);
   }
 
   // Rota para fazer logout (revogar refresh token)
-  @UseGuards(JwtAuthGuard)  // ← Precisa estar logado para fazer logout
   @Post('logout')
   logout(@Body() logoutDto: LogoutDto, @CurrentUser() user) {
     // user.id = ID do usuário logado (vem do JWT)
