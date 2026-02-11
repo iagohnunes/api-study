@@ -4,193 +4,10 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["db_investimento", "public"]
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model auth_identitie {
-  id                        String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id                   String                      @db.Uuid
-  provider                  auth_provider
-  provider_user_id          String?
-  email                     String?
-  email_verified_at         DateTime?                   @db.Timestamptz(6)
-  password_hash             String?
-  created_at                DateTime                    @default(now()) @db.Timestamptz(6)
-  updated_at                DateTime                    @updatedAt @db.Timestamptz(6)
-  users                     user                       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  email_verification_tokens email_verification_token[]
-
-  @@unique([provider, provider_user_id], map: "ux_auth_identities_provider_user")
-  @@index([email], map: "ix_auth_identities_email")
-  @@index([user_id], map: "ix_auth_identities_user_id")
-
-  @@map("auth_identities")
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model email_verification_token {
-  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  identity_id     String          @db.Uuid
-  token_hash      String          @unique
-  expires_at      DateTime        @db.Timestamptz(6)
-  used_at         DateTime?       @db.Timestamptz(6)
-  created_at      DateTime        @default(now()) @db.Timestamptz(6)
-  auth_identities auth_identitie @relation(fields: [identity_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([expires_at], map: "ix_email_verif_expires")
-  @@index([identity_id], map: "ix_email_verif_identity")
-
-  @@map("email_verification_tokens")
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model refresh_token {
-  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id    String    @db.Uuid
-  token_hash String    @unique
-  expires_at DateTime  @db.Timestamptz(6)
-  revoked_at DateTime? @db.Timestamptz(6)
-  ip         String?
-  user_agent String?
-  created_at DateTime  @default(now()) @db.Timestamptz(6)
-  users      user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([expires_at], map: "ix_refresh_expires")
-  @@index([user_id], map: "ix_refresh_user_id")
-
-  @@map("refresh_tokens")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model user {
-  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name            String?
-  avatar_url      String?
-  phone           String?
-  status          user_status       @default(PENDING)
-  last_login_at   DateTime?         @db.Timestamptz(6)
-  created_at      DateTime          @default(now()) @db.Timestamptz(6)
-  updated_at      DateTime          @updatedAt @db.Timestamptz(6)
-  deleted_at      DateTime?         @db.Timestamptz(6)
-  
-  auth_identities auth_identitie[]
-  refresh_tokens  refresh_token[]
-  user_roles      user_role[]
-  sessions        session[]
-  audit_logs      audit_log[]
-
-  @@index([status])
-  @@index([deleted_at])
-  @@map("users")
-}
-
-enum auth_provider {
-  EMAIL
-  GOOGLE
-  GITHUB
-}
-
-enum user_status {
-  ACTIVE
-  BLOCKED
-  PENDING
-}
-
-// ==================== SISTEMA DE ROLES E PERMISSÕES ====================
-
-/// Tabela de perfis/funções do sistema
-model role {
-  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name             String            @unique
-  description      String?
-  created_at       DateTime          @default(now()) @db.Timestamptz(6)
-  updated_at       DateTime          @updatedAt @db.Timestamptz(6)
-  deleted_at       DateTime?         @db.Timestamptz(6)
-  
-  user_roles       user_role[]
-  role_permissions role_permission[]
-  
-  @@index([deleted_at])
-  @@map("roles")
-}
-
-/// Relacionamento entre usuários e roles (Many-to-Many)
-model user_role {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id    String   @db.Uuid
-  role_id    String   @db.Uuid
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  
-  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  role       role     @relation(fields: [role_id], references: [id], onDelete: Cascade)
-  
-  @@unique([user_id, role_id])
-  @@index([user_id])
-  @@index([role_id])
-  @@map("user_roles")
-}
-
-/// Tabela de permissões granulares
-model permission {
-  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name             String            @unique
-  description      String?
-  resource         String
-  action           String
-  created_at       DateTime          @default(now()) @db.Timestamptz(6)
-  
-  role_permissions role_permission[]
-  
-  @@index([resource, action])
-  @@map("permissions")
-}
-
-/// Relacionamento entre roles e permissões (Many-to-Many)
-model role_permission {
-  id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  role_id       String     @db.Uuid
-  permission_id String     @db.Uuid
-  created_at    DateTime   @default(now()) @db.Timestamptz(6)
-  
-  role          role       @relation(fields: [role_id], references: [id], onDelete: Cascade)
-  permission    permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
-  
-  @@unique([role_id, permission_id])
-  @@index([role_id])
-  @@index([permission_id])
-  @@map("role_permissions")
-}
-
-// ==================== GERENCIAMENTO DE SESSÕES JWT ====================
-
-/// Tabela para controle de sessões JWT ativas
-model session {
-  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id      String    @db.Uuid
-  token_jti    String    @unique
-  ip           String?
-  user_agent   String?
-  device_info  String?
-  expires_at   DateTime  @db.Timestamptz(6)
-  revoked_at   DateTime? @db.Timestamptz(6)
-  last_used_at DateTime  @updatedAt @db.Timestamptz(6)
-  created_at   DateTime  @default(now()) @db.Timestamptz(6)
-  
-  user         user      @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  
-  @@index([user_id])
-  @@index([token_jti])
-  @@index([expires_at])
-  @@map("sessions")
-}
-
-// ==================== AUDITORIA E LOGS ====================
-
-/// Tabela de logs de auditoria para segurança e compliance
-model audit_log {
+model audit_logs {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   user_id     String?  @db.Uuid
   action      String
@@ -200,11 +17,269 @@ model audit_log {
   user_agent  String?
   metadata    Json?
   created_at  DateTime @default(now()) @db.Timestamptz(6)
-  
-  user        user?    @relation(fields: [user_id], references: [id], onDelete: SetNull)
-  
-  @@index([user_id])
+  users       users?   @relation(fields: [user_id], references: [id])
+
   @@index([action])
   @@index([created_at])
-  @@map("audit_logs")
+  @@index([user_id])
+  @@schema("public")
+}
+
+model auth_identities {
+  id                        String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                   String                      @db.Uuid
+  provider                  auth_provider
+  provider_user_id          String?
+  email                     String?
+  email_verified_at         DateTime?                   @db.Timestamptz(6)
+  password_hash             String?
+  created_at                DateTime                    @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime                    @updatedAt @db.Timestamptz(6)
+  users                     users                       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  email_verification_tokens email_verification_tokens[]
+
+  @@unique([provider, provider_user_id], map: "ux_auth_identities_provider_user")
+  @@index([email], map: "ix_auth_identities_email")
+  @@index([user_id], map: "ix_auth_identities_user_id")
+  @@schema("public")
+}
+
+model email_verification_tokens {
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  identity_id     String          @db.Uuid
+  token_hash      String          @unique
+  expires_at      DateTime        @db.Timestamptz(6)
+  used_at         DateTime?       @db.Timestamptz(6)
+  created_at      DateTime        @default(now()) @db.Timestamptz(6)
+  auth_identities auth_identities @relation(fields: [identity_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([expires_at], map: "ix_email_verif_expires")
+  @@index([identity_id], map: "ix_email_verif_identity")
+  @@schema("public")
+}
+
+model permissions {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String             @unique
+  description      String?
+  resource         String
+  action           String
+  created_at       DateTime           @default(now()) @db.Timestamptz(6)
+  role_permissions role_permissions[]
+
+  @@index([resource, action])
+  @@schema("public")
+}
+
+model refresh_tokens {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String    @db.Uuid
+  token_hash String    @unique
+  expires_at DateTime  @db.Timestamptz(6)
+  revoked_at DateTime? @db.Timestamptz(6)
+  ip         String?
+  user_agent String?
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([expires_at], map: "ix_refresh_expires")
+  @@index([user_id], map: "ix_refresh_user_id")
+  @@schema("public")
+}
+
+model role_permissions {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  role_id       String      @db.Uuid
+  permission_id String      @db.Uuid
+  created_at    DateTime    @default(now()) @db.Timestamptz(6)
+  permissions   permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+  roles         roles       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@unique([role_id, permission_id])
+  @@index([permission_id])
+  @@index([role_id])
+  @@schema("public")
+}
+
+model roles {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String             @unique
+  description      String?
+  created_at       DateTime           @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime           @updatedAt @db.Timestamptz(6)
+  deleted_at       DateTime?          @db.Timestamptz(6)
+  role_permissions role_permissions[]
+  user_roles       user_roles[]
+
+  @@index([deleted_at])
+  @@schema("public")
+}
+
+model sessions {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id      String    @db.Uuid
+  token_jti    String    @unique
+  ip           String?
+  user_agent   String?
+  device_info  String?
+  expires_at   DateTime  @db.Timestamptz(6)
+  revoked_at   DateTime? @db.Timestamptz(6)
+  last_used_at DateTime  @db.Timestamptz(6)
+  created_at   DateTime  @default(now()) @db.Timestamptz(6)
+  users        users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([expires_at])
+  @@index([token_jti])
+  @@index([user_id])
+  @@schema("public")
+}
+
+model user_roles {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  role_id    String   @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  roles      roles    @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, role_id])
+  @@index([role_id])
+  @@index([user_id])
+  @@schema("public")
+}
+
+model users {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String?
+  avatar_url      String?
+  phone           String?
+  status          user_status       @default(PENDING)
+  last_login_at   DateTime?         @db.Timestamptz(6)
+  created_at      DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime          @updatedAt @db.Timestamptz(6)
+  deleted_at      DateTime?         @db.Timestamptz(6)
+  assets          assets[]
+  portfolios      portfolios[]
+  transactions    transactions[]
+  audit_logs      audit_logs[]
+  auth_identities auth_identities[]
+  refresh_tokens  refresh_tokens[]
+  sessions        sessions[]
+  user_roles      user_roles[]
+
+  @@index([deleted_at])
+  @@index([status])
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model assets {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id      String         @db.Uuid
+  ticker       String         @db.VarChar(20)
+  name         String         @db.VarChar(255)
+  type         asset_type
+  description  String?
+  created_at   DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime       @updatedAt @db.Timestamptz(6)
+  deleted_at   DateTime?      @db.Timestamptz(6)
+  users        users          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_assets_user")
+  portfolios   portfolios[]
+  transactions transactions[]
+
+  @@unique([user_id, ticker], map: "ux_assets_user_ticker")
+  @@index([deleted_at], map: "ix_assets_deleted_at")
+  @@index([ticker], map: "ix_assets_ticker")
+  @@index([type], map: "ix_assets_type")
+  @@index([user_id], map: "ix_assets_user_id")
+  @@schema("db_investimento")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model portfolios {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id             String   @db.Uuid
+  asset_id            String   @db.Uuid
+  quantity            Decimal  @db.Decimal(18, 8)
+  average_price       Decimal  @db.Decimal(18, 8)
+  total_invested      Decimal  @db.Decimal(18, 2)
+  current_price       Decimal? @db.Decimal(18, 8)
+  current_value       Decimal? @db.Decimal(18, 2)
+  profit_loss         Decimal? @db.Decimal(18, 2)
+  profit_loss_percent Decimal? @db.Decimal(10, 4)
+  last_update         DateTime @default(now()) @db.Timestamptz(6)
+  created_at          DateTime @default(now()) @db.Timestamptz(6)
+  assets              assets   @relation(fields: [asset_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_portfolios_asset")
+  users               users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_portfolios_user")
+
+  @@unique([user_id, asset_id], map: "ux_portfolios_user_asset")
+  @@index([asset_id], map: "ix_portfolios_asset_id")
+  @@index([user_id], map: "ix_portfolios_user_id")
+  @@schema("db_investimento")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model transactions {
+  id               String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id          String           @db.Uuid
+  asset_id         String           @db.Uuid
+  type             transaction_type
+  quantity         Decimal          @db.Decimal(18, 8)
+  price            Decimal          @db.Decimal(18, 8)
+  total_value      Decimal          @db.Decimal(18, 2)
+  fees             Decimal          @default(0) @db.Decimal(18, 2)
+  transaction_date DateTime         @db.Timestamptz(6)
+  notes            String?
+  created_at       DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime         @updatedAt @db.Timestamptz(6)
+  deleted_at       DateTime?        @db.Timestamptz(6)
+  assets           assets           @relation(fields: [asset_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_transactions_asset")
+  users            users            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_transactions_user")
+
+  @@index([asset_id], map: "ix_transactions_asset_id")
+  @@index([transaction_date], map: "ix_transactions_date")
+  @@index([deleted_at], map: "ix_transactions_deleted_at")
+  @@index([type], map: "ix_transactions_type")
+  @@index([user_id], map: "ix_transactions_user_id")
+  @@schema("db_investimento")
+}
+
+enum auth_provider {
+  EMAIL
+  GOOGLE
+  GITHUB
+
+  @@schema("public")
+}
+
+enum user_status {
+  ACTIVE
+  BLOCKED
+  PENDING
+
+  @@schema("public")
+}
+
+enum asset_type {
+  ACAO
+  FII
+  RENDA_FIXA
+  CRIPTO
+  ETF
+  OUTRO
+
+  @@schema("db_investimento")
+}
+
+enum transaction_type {
+  COMPRA
+  VENDA
+  DIVIDENDO
+  JCP
+  RENDIMENTO
+  BONIFICACAO
+  DESDOBRAMENTO
+  AGRUPAMENTO
+
+  @@schema("db_investimento")
 }

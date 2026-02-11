@@ -5,6 +5,9 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AuditInterceptor } from './auth/interceptors/audit.interceptor';
+import { AssetsModule } from './investments/assets/assets.module';
+import { TransactionsModule } from './investments/transactions/transactions.module';
+import { PortfolioModule } from './investments/portfolio/portfolio.module';
 
 @Module({
   imports: [
@@ -12,6 +15,9 @@ import { AuditInterceptor } from './auth/interceptors/audit.interceptor';
     PrismaModule,
     UsersModule,
     AuthModule,
+    AssetsModule,
+    TransactionsModule,
+    PortfolioModule,
   ],
   controllers: [],
   providers: [

@@ -9,7 +9,7 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   findAll() {
-    return this.prisma.user.findMany({
+    return this.prisma.users.findMany({
       select: {
         id: true,
         name: true,
@@ -23,7 +23,7 @@ export class UsersService {
 
   async findOne(id: string) {
     
-    const user = await  this.prisma.user.findUnique({
+    const user = await  this.prisma.users.findUnique({
       select: {
         id: true,
         name: true,
@@ -47,7 +47,7 @@ export class UsersService {
     // return await this.prisma.$transaction(async (cursor) => {
     // });
 
-    return this.prisma.user.create({
+    return this.prisma.users.create({
         data: {
           ...createUserDto,
           status: 'PENDING',
@@ -64,7 +64,7 @@ export class UsersService {
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     try {
-      return this.prisma.user.update({
+      return this.prisma.users.update({
         where: { id },
         data: updateUserDto,
         select: {

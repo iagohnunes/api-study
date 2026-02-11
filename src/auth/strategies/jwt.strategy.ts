@@ -27,7 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // payload = dados decodificados do token
     // { sub: "user-id", email: "...", name: "...", iat: ..., exp: ... }
     // Buscar usuário no banco para confirmar que ainda existe
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.users.findUnique({
       where: {
         id: payload.sub,
       },
@@ -39,11 +39,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         },
         user_roles: {
           select: {
-            role: {
+            roles: {
               include: {
                 role_permissions: {
                   include: {
-                    permission: true
+                    permissions: true
                   }
                 }
               }
@@ -64,12 +64,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     // Extrair nomes das roles
-    const roles = user.user_roles.map(ur => ur.role.name);
+    const roles = user.user_roles.map(ur => ur.roles.name);
 
     // Extrair permissions (de todas as roles do usuário)
     const permissions = user.user_roles
-      .flatMap(ur => ur.role.role_permissions)  // Pega todas as role_permissions
-      .map(rp => rp.permission.name)  // Extrai o nome da permission
+      .flatMap(ur => ur.roles.role_permissions)  // Pega todas as role_permissions
+      .map(rp => rp.permissions.name)  // Extrai o nome da permission
       .filter((value, index, self) => self.indexOf(value) === index);  // Remove duplicadas
 
     // Retorna dados do usuário (vai ficar disponível nas rotas)

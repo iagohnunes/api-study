@@ -21,7 +21,7 @@ export class AuthService {
     const { email, password, name } = registerDto;
 
     // 1. Verificar se o email já existe
-    const existingUser = await this.prisma.user.findFirst({
+    const existingUser = await this.prisma.users.findFirst({
       where: {
         auth_identities: {
           some: { email },
@@ -37,7 +37,7 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // 3. Criar o usuário
-    const user = await this.prisma.user.create({
+    const user = await this.prisma.users.create({
       data: {
         name,
         status: 'PENDING',
@@ -72,7 +72,7 @@ export class AuthService {
     const { email, password } = lodinDto;
 
     // 1. Buscar usuário pelo email
-    const user = await this.prisma.user.findFirst({
+    const user = await this.prisma.users.findFirst({
       where: {
         auth_identities: {
           some: {
@@ -130,7 +130,7 @@ export class AuthService {
     expiresAt.setDate(expiresAt.getDate() + 7);
 
     // 7. Salvar refresh token no banco
-    await this.prisma.refresh_token.create({
+    await this.prisma.refresh_tokens.create({
       data: {
         user_id: user.id,
         token_hash: refreshTokenHash,
@@ -160,7 +160,7 @@ export class AuthService {
       .digest('hex');
 
     // 2. Buscar refresh token no banco pelo hash
-    const storedToken = await this.prisma.refresh_token.findUnique({
+    const storedToken = await this.prisma.refresh_tokens.findUnique({
       where: {
         token_hash: refresh_token,
       },
@@ -235,7 +235,7 @@ export class AuthService {
       .digest('hex');
 
     // 2. Buscar o refresh token no banco
-    const storedToken = await this.prisma.refresh_token.findFirst({
+    const storedToken = await this.prisma.refresh_tokens.findFirst({
       where: {
         token_hash: tokenHash,
         user_id: userId,
@@ -250,7 +250,7 @@ export class AuthService {
     }
 
     // 4. Revogar o token (marcar como revogado)
-    await this.prisma.refresh_token.update({
+    await this.prisma.refresh_tokens.update({
       where: {
         id: storedToken.id,
       },

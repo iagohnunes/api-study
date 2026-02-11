@@ -1,5 +1,5 @@
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, permission } from '@prisma/client';
+import { PrismaClient, permissions } from '@prisma/client';
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -13,7 +13,7 @@ async function main() {
   // ==================== ROLES ====================
   console.log('📋 Criando roles...');
 
-  const adminRole = await prisma.role.upsert({
+  const adminRole = await prisma.roles.upsert({
     where: { name: 'ADMIN' },
     update: {},
     create: {
@@ -22,7 +22,7 @@ async function main() {
     },
   });
 
-  const userRole = await prisma.role.upsert({
+  const userRole = await prisma.roles.upsert({
     where: { name: 'USER' },
     update: {},
     create: {
@@ -31,7 +31,7 @@ async function main() {
     },
   });
 
-  const moderatorRole = await prisma.role.upsert({
+  const moderatorRole = await prisma.roles.upsert({
     where: { name: 'MODERATOR' },
     update: {},
     create: {
@@ -70,9 +70,9 @@ async function main() {
     { name: 'system:audit', resource: 'system', action: 'audit', description: 'Visualizar auditoria' },
   ];
 
-  const createdPermissions: permission[] = [];
+  const createdPermissions: permissions[] = [];
   for (const permission of permissions) {
-    const created = await prisma.permission.upsert({
+    const created = await prisma.permissions.upsert({
       where: { name: permission.name },
       update: {},
       create: permission,
@@ -87,7 +87,7 @@ async function main() {
 
   // ADMIN: Todas as permissões
   for (const permission of createdPermissions) {
-    await prisma.role_permission.upsert({
+    await prisma.role_permissions.upsert({
       where: {
         role_id_permission_id: {
           role_id: adminRole.id,
@@ -107,7 +107,7 @@ async function main() {
     (p) => p.action === 'read' || p.action === 'write',
   );
   for (const permission of moderatorPermissions) {
-    await prisma.role_permission.upsert({
+    await prisma.role_permissions.upsert({
       where: {
         role_id_permission_id: {
           role_id: moderatorRole.id,
@@ -127,7 +127,7 @@ async function main() {
     (p) => p.resource === 'users' && p.action === 'read',
   );
   for (const permission of userPermissions) {
-    await prisma.role_permission.upsert({
+    await prisma.role_permissions.upsert({
       where: {
         role_id_permission_id: {
           role_id: userRole.id,
@@ -155,3 +155,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+ 

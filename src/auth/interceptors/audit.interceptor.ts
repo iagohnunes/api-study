@@ -39,7 +39,7 @@ export class AuditInterceptor implements NestInterceptor {
           // Se for uma ação importante E tiver userId, registrar no banco
           if (action && userId) {
             try {
-              await this.prisma.audit_log.create({
+              await this.prisma.audit_logs.create({
                 data: {
                   user_id: userId,
                   action: action,
@@ -64,7 +64,7 @@ export class AuditInterceptor implements NestInterceptor {
 
           if (action && user) {
             try {
-              await this.prisma.audit_log.create({
+              await this.prisma.audit_logs.create({
                 data: {
                   user_id: user.id,
                   action: action,
